@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SNWriter</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="activity_receive_result">App/Activity/Receive Result</string>
+    <string name="receive_result_instructions">Press the button to get an activity result, which will be displayed here:</string>
+    <string name="receive_result_result">Get Result</string>
+    <string name="custom_title_left">Left is best</string>
+    <string name="custom_title_right">Right is always right</string>
+    <string name="custom_title_left_button">Change Left</string>
+    <string name="custom_title_right_button">Change Right</string>
+    <string name="confirm">Confirm</string>
+    <string name="wifimac">Wifi Mac :</string>
+    <string name="btaddr">BT Address :</string>
+    <string name="sn">Device Number :</string>
+    <string name="change">Begin Change</string>
+    
+    <!-- Simple strings. -->
+    <string name="decode">Decode</string>
+    <string name="snap">Snapshot</string>
+    <string name="beep">beep</string>
+    <string name="getparam">Get</string>
+    <string name="setparam">Set</string>
+    <string name="dflparam">Defaults</string>
+    <string name="decoding">decoding</string>
+    <string name="snapping">taking snapshot</string>
+    <string name="pnum">Number</string>
+    <string name="pval">Value</string>
+    <string name="sdl">SDLtestApp</string>
+    <string name="enable">EnableAll</string>
+    <string name="disable">DisableAll</string>
+    <string name="reading">Reading Pane</string>
+    <string name="preview">Preview</string>
+    <string name="DecImage">GetDecodedImage</string>
+    <string name="stat">status</string>
+    <string name="handsfree">Hands Free</string>
+    <string name="blank"></string>
+    <string name="data">data</string>
+    <string name="prop">Properties</string>
+    <string name="video">Video</string>
+    <string name="Params">Parameters</string>
+
+</resources>
