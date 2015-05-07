@@ -1,5 +1,7 @@
 package com.yudi.snwriter;
 
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,23 +15,58 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.graphics.Color;
 import android.text.Editable;
+import android.text.Selection;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.Window;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.util.StringTokenizer;
 
-public class MainActivity extends Activity {
+import com.motorolasolutions.adc.decoder.BarCodeReader;
+
+public class MainActivity extends Activity implements
+    BarCodeReader.DecodeCallback{
 	public static final String TAG = "SNWriter";
 
 	//TextView tv;
 	//String str = "null";
 	//private String string;
 
+	//states
+	static final int STATE_IDLE 		= 0;
+	static final int STATE_DECODE 		= 1;
+	private ToneGenerator tg 		= null;
+	// BarCodeReader specifics
+	private BarCodeReader bcr 		= null;
+	private int state				= STATE_IDLE;
+	private int decodes 			= 0;
+	private String decodeDataString;
+	private String decodeStatString;
+
+	private boolean isLog =true;
+	private static int decCount = 0;
+	static
+	{
+		System.loadLibrary("IAL");
+		System.loadLibrary("SDL");
+		
+		if(android.os.Build.VERSION.SDK_INT >= 19)
+			System.loadLibrary("barcodereader44"); // Android 4.4
+		else
+			if(android.os.Build.VERSION.SDK_INT >= 18)
+				System.loadLibrary("barcodereader43"); // Android 4.3
+			else
+				System.loadLibrary("barcodereader");   // Android 2.3 - Android 4.2
+	}
+	public void log(String str){
+		if (isLog ) {
+			Log.d("0127", str);
+		}
+	}
 	private static final int MAC_BARCODE_DIGITS = 64;
 	private static final int MAC_ADDRESS_DIGITS = 6;
 	//private static final int MAX_ADDRESS_VALUE = 0xff;
@@ -48,6 +85,14 @@ public class MainActivity extends Activity {
 	private ProgressDialog progressDialog;
 
 	private BluetoothAdapter adapter;
+
+	private int trigMode = BarCodeReader.ParamVal.LEVEL;
+
+	private int modechgEvents = 0;
+
+	private int motionEvents = 0;
+	
+	int foc;
 	private static Handler handler=new Handler();
 	//private RelativeLayout confirm;
 	@Override
@@ -66,19 +111,23 @@ public class MainActivity extends Activity {
 		barcode = (EditText)this.findViewById(R.id.barcode);		
 		init(wifimac);
 		init(btaddr);
+		init(barcode);
 		//this.write(sn, wifiMacString, btAddrString);
+		
+		tg = new ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME);
 	}
 	
 	public void confirm(View view) {
 		
-		wifiMacString = wifimac.getText().toString();
+		wifiMacString = wifimac.getText().toString().trim();
 		btAddrString = btaddr.getText().toString();
 		sn = barcode.getText().toString();
 		
-		wifiMacString = formatString(wifiMacString);
-		//int i =wifiMacString.length();
-		//System.out.println(i);
-		//Toast.makeText(this, i, Toast.LENGTH_SHORT).show();
+		//Toast.makeText(this, wifiMacString, Toast.LENGTH_SHORT).show();
+		wifiMacString = formatString(wifiMacString).trim();
+		int i =wifiMacString.length();
+		System.out.println(i);
+		//Toast.makeText(this, wifiMacString, Toast.LENGTH_SHORT).show();
 		btAddrString = formatString(btAddrString);
 		if(wifiMacString.length()==0){
 			wifimac.setText("");
@@ -150,7 +199,26 @@ public class MainActivity extends Activity {
 		return restr;
 	}
 	public void init(final EditText editText) {
-		//TextWatcher textWatcher = null;
+		editText.setOnFocusChangeListener(new OnFocusChangeListener() {
+			
+			@Override
+			public void onFocusChange(View arg0, boolean arg1) {
+				// TODO Auto-generated method stub
+				if(arg1){
+					if(editText==wifimac){
+						foc=1;
+					}
+					if(editText==btaddr){
+						foc=2;
+					}
+					if(editText==barcode){
+						foc=3;
+					}
+				}
+				else
+					foc=0;
+			}
+		});
 		TextWatcher textWatcher = new TextWatcher() {
 			CharSequence temp;
 			int selectionStart;
@@ -184,9 +252,11 @@ public class MainActivity extends Activity {
 					editText.setHint("please input");
 					editText.setHintTextColor(Color.GRAY);
 				}
+				
 			}
 		};
-		editText.addTextChangedListener(textWatcher);
+		if(editText!=barcode)
+		    editText.addTextChangedListener(textWatcher);
 	}
 	protected void dialog() {
 		  AlertDialog.Builder builder = new Builder(MainActivity.this);
@@ -207,23 +277,23 @@ public class MainActivity extends Activity {
 		  builder.create().show();
 		}
 
-	public int write(String barcode, String wifiMac, String btAddr) {
-		int flag = -1;
+	public void write(String barcode, String wifiMac, String btAddr) {
+		//int flag = -1;
 		if (wifiMac != null){
-			flag = updateWifiMacAddr(wifiMac);
+			updateWifiMacAddr(wifiMac);
 		}
 
 		if (btAddr != null)
-			flag = updateBtAddr(btAddr);
-		if(barcode !=null&&barcode.length()>0)
-			flag = updateBarcode(barcode);
+			updateBtAddr(btAddr);
+		/*if(barcode !=null&&barcode.length()>0)
+			updateBarcode(barcode);
 
-		return flag;
-		/*int flag = -1;
+		return flag;*/
+		int flag = -1;
 		byte[] sn_b = barcode.getBytes();
 		short[] wifiMac_b = macString2ByteArray(wifiMac);
 		short[] btAddr_b = macString2ByteArray(btAddr);
-
+		System.out.println(sn_b.length);
 		try {
 			NvRAMAgent agent = NvRAMAgentHelper.getAgent();
 
@@ -234,13 +304,16 @@ public class MainActivity extends Activity {
 			int i, j;
 			i = 0;
 			// sn
-			for (j = 0; i < MAC_BARCODE_DIGITS; i++) {
-				for (; j < (sn_b.length > MAC_BARCODE_DIGITS ? MAC_BARCODE_DIGITS: sn_b.length); j++, i++)
-					buff[i] = sn_b[j];
+			if(sn_b !=null&&sn_b.length>0){
+				for (j = 0; i < MAC_BARCODE_DIGITS; i++) {
+					for (; j < (sn_b.length > MAC_BARCODE_DIGITS ? MAC_BARCODE_DIGITS: sn_b.length); j++, i++)
+						buff[i] = sn_b[j];
 
-				buff[i] = 0;
+					buff[i] = 0;
+				}
+				
 			}
-
+            i=64;
 			// imei
 			buff[i++] = (byte) 0x99;
 			buff[i++] = (byte) 0x99;
@@ -280,7 +353,8 @@ public class MainActivity extends Activity {
 		} catch (Exception e) {
 			Log.d(TAG, e.getMessage() + ":" + e.getCause());
 			e.printStackTrace();
-		}*/
+		}
+		
 	}
 
 	private int updateBarcode(String sn) {
@@ -436,6 +510,244 @@ public class MainActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.main, menu);
 		return true;
+	}
+	
+	
+	
+	public void doDecode(View v) {
+		//doSetParam(905, 1);
+		if (setIdle() != STATE_IDLE)
+			return;
+		state = STATE_DECODE;
+		decCount = 0;
+		decodeDataString = new String("");
+		decodeStatString = new String("");
+		wifimac.setText("");
+		dspStat(R.string.decoding);
+		bcr.startDecode(); // start decode (callback gets results)
+	}
+
+	private void dspStat(int id) {
+		// TODO Auto-generated method stub
+		if(foc==1)
+		    wifimac.setHint(id);
+		if(foc==2)
+			btaddr.setHint(id);
+		if(foc==3)
+			barcode.setHint(id);
+	}
+
+	private void dspData(String string) {
+		// TODO Auto-generated method stub
+		if(foc==1){
+			wifimac.setText(string.trim());
+		}		    
+		if(foc==2)
+			btaddr.setText(string.trim());
+		if(foc==3)
+			barcode.setText(string.trim());
+	}
+
+	private int setIdle() {
+		// TODO Auto-generated method stub
+		int prevState = state;
+		int ret = prevState;		//for states taking time to chg/end
+		
+		state = STATE_IDLE;
+		switch (prevState)
+		{		
+			//fall thru
+		case STATE_DECODE:
+			dspStat("decode stopped");
+			bcr.stopDecode();
+			break;			
+		default:
+			ret = STATE_IDLE;			
+		}
+		return ret;
+	}
+
+	private void dspStat(String string) {
+		// TODO Auto-generated method stub
+		if(foc==1)
+		    wifimac.setHint(string);
+		if(foc==2)
+			btaddr.setHint(string);
+		if(foc==3)
+			barcode.setHint(string);
+	}
+
+	private void dspErr(String s) {
+		// TODO Auto-generated method stub
+		log("ERROR" + s);
+	}
+
+	@Override
+	public void onDecodeComplete(int symbology, int length, byte[] data,
+			BarCodeReader reader) {
+		// TODO Auto-generated method stub
+		log("into onDecodeComplete");
+		if (state == STATE_DECODE)
+			state = STATE_IDLE;
+		
+		// Get the decode count
+		if(length == BarCodeReader.DECODE_STATUS_MULTI_DEC_COUNT)
+			decCount = symbology;
+		
+		if (length > 0)
+		{
+			log("length > 0");
+			if (isHandsFree()==false && isAutoAim()==false)
+				bcr.stopDecode();
+
+			++decodes;
+			log("symbology:"+symbology);
+			if (symbology == 0x69)	// signature capture
+			{
+				log("into symbology");
+				
+				decodeStatString += new String("[" + decodes + "] type: " + symbology + " len: " + length);
+				decodeDataString += new String(data);  
+				
+			}
+			else
+			{ 	
+				
+
+			if (symbology == 0x99)	//type 99?
+			{
+				symbology = data[0];
+				int n = data[1];
+				int s = 2;
+				int d = 0;
+				int len = 0;
+				byte d99[] = new byte[data.length];					
+				for (int i=0; i<n; ++i)
+				{
+					s += 2;
+					len = data[s++];
+					System.arraycopy(data, s, d99, d, len);
+					s += len;
+					d += len;
+				}
+				d99[d] = 0;
+				data = d99;
+			}
+			decodeStatString += new String("[" + decodes + "] type: " + symbology + " len: " + length);
+			decodeDataString += new String(data);
+			dspStat(decodeStatString);
+			dspData(decodeDataString);
+			log("=======");
+			
+			log("======= end");
+			
+			
+			if(decCount > 1) // Add the next line only if multiple decode
+			{
+				decodeStatString += new String(" ; ");
+				decodeDataString += new String(" ; ");
+			}
+			else
+			{
+				decodeDataString = new String("");
+				decodeStatString = new String("");
+			}
+			}
+			
+			if (tg != null)
+				tg.startTone(ToneGenerator.TONE_CDMA_NETWORK_CALLWAITING);
+		}
+      else	// no-decode
+      {
+      	dspData("");
+      	switch (length)
+      	{
+      	case BarCodeReader.DECODE_STATUS_TIMEOUT:
+      		dspStat("decode timed out");
+      		break;
+      		
+      	case BarCodeReader.DECODE_STATUS_CANCELED:
+      		dspStat("decode cancelled");
+      		break;
+      		
+     		case BarCodeReader.DECODE_STATUS_ERROR:
+      	default:
+      		dspStat("decode failed");      		
+      		break;
+      	}
+      }
+	}
+
+	private boolean isHandsFree() {
+		// TODO Auto-generated method stub
+		return (trigMode == BarCodeReader.ParamVal.HANDSFREE);
+	}
+
+	private boolean isAutoAim() {
+		// TODO Auto-generated method stub
+		return (trigMode == BarCodeReader.ParamVal.AUTO_AIM);
+	}
+
+	@Override
+	public void onEvent(int event, int info, byte[] data, BarCodeReader reader) {
+		// TODO Auto-generated method stub
+		switch (event)
+		{
+		case BarCodeReader.BCRDR_EVENT_SCAN_MODE_CHANGED:
+			++modechgEvents;
+			dspStat("Scan Mode Changed Event (#" + modechgEvents + ")");
+			break;
+
+		case BarCodeReader.BCRDR_EVENT_MOTION_DETECTED:
+			++motionEvents;
+			dspStat("Motion Detect Event (#" + motionEvents + ")");
+			break;
+
+		default:
+			// process any other events here
+			break;
+		}
+	}
+
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		super.onPause();
+		if (bcr != null)
+		{
+			setIdle();			
+			bcr.release();
+			bcr = null;
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		super.onResume();
+		state = STATE_IDLE;
+
+		try
+		{
+			dspStat(getResources().getString(R.string.app_name) + " v" + this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName);
+				Log.d("fff", "version:"+android.os.Build.VERSION.SDK_INT);
+			if(android.os.Build.VERSION.SDK_INT >= 18)
+				bcr = BarCodeReader.open(getApplicationContext()); // Android 4.3 and above
+			else
+				bcr = BarCodeReader.open(1); // Android 2.3
+			
+			if (bcr == null)
+			{
+				dspErr("open failed");
+				return;
+			}
+			bcr.setDecodeCallback(this);
+		}
+		catch (Exception e)
+		{
+			dspErr("open excp:" + e);
+			System.out.println("open excp:" + e);
+		}
 	}
 
 }

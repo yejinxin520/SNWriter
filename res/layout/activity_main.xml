@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="30dp"
         android:background="@drawable/corner"
         android:orientation="vertical" >
 
@@ -56,7 +56,7 @@
                 android:background="@drawable/stroke"
                 android:hint="@string/app_name"
                 android:singleLine="true"                 
-                android:inputType="number"
+                
                 />
         </LinearLayout>
 
@@ -83,7 +83,7 @@
                 android:background="@drawable/stroke"
                 android:hint="@string/app_name"
                 android:singleLine="true" 
-                android:inputType="number"
+                
                 />
         </LinearLayout>
 
@@ -140,13 +140,40 @@
 
     </LinearLayout>
  
-    <RelativeLayout 
-        android:id="@+id/confirm"
+    <LinearLayout 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal" 
+        android:baselineAligned="false"    
+        android:layout_marginTop="30dp"   
+        >
+        <RelativeLayout 
+        android:id="@+id/decode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
         android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginRight="10dp"       
+        android:background="@drawable/layout_selector"
+        android:onClick="doDecode"        
+        >
+        <TextView         
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="@string/decode"
+        android:textSize="20sp"
+        android:textColor="#000"
+        android:layout_marginTop="20dp"
+        />  
+        </RelativeLayout> 
+        <RelativeLayout 
+        android:id="@+id/confirm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="20dp"        
         android:background="@drawable/layout_selector"
         android:clickable="true"
         android:onClick="confirm"
@@ -159,7 +186,10 @@
         android:textSize="20sp"
         android:textColor="#000"
         android:layout_marginTop="20dp"
-        />   
+        />
     </RelativeLayout>
+        
+    </LinearLayout>
+    
 
 </LinearLayout>

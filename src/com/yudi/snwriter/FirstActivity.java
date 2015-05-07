@@ -81,17 +81,14 @@ public class FirstActivity extends Activity {
 	}
 	String getMac() {
 		wifiManager = (WifiManager)this.getSystemService(Context.WIFI_SERVICE);
-		if(!wifiManager.isWifiEnabled())
-		   tryOpenWifi(wifiManager);		
-		try
-		{
-		Thread.sleep(5000);
+		if (!wifiManager.isWifiEnabled()) {
+			tryOpenWifi(wifiManager);
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-		catch (InterruptedException e)
-		{
-		e.printStackTrace();
-		}
-		
         String macSerial = null;
         String str = "";
         try {
