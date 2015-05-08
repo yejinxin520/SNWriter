@@ -3,6 +3,7 @@ package com.yudi.snwriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -12,9 +13,11 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class FirstActivity extends Activity {
 
@@ -26,7 +29,8 @@ public class FirstActivity extends Activity {
 	private static BluetoothAdapter adapter;
 	public static final String TAG = "SNWriter";
 	private static final int MAC_BARCODE_DIGITS = 64;
-	//private static final int REQUEST_ENABLE_BT = 3; 
+	private long exitTime = 0;
+ 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -256,7 +260,20 @@ public class FirstActivity extends Activity {
 	        }
 	        return false;
 	    }
-
+	 @Override
+	 public boolean onKeyDown(int keyCode, KeyEvent event) {
+	     if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){   
+	         if((System.currentTimeMillis()-exitTime) > 2000){  
+	             Toast.makeText(getApplicationContext(), "再按一次退出程序", Toast.LENGTH_SHORT).show();                                
+	             exitTime = System.currentTimeMillis();   
+	         } else {
+	             finish();
+	             System.exit(0);
+	         }
+	         return true;   
+	     }
+	     return super.onKeyDown(keyCode, event);
+	 }
 
 @Override
 protected void onResume(){
