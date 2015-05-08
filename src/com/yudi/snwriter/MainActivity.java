@@ -15,12 +15,13 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.graphics.Color;
 import android.text.Editable;
-import android.text.Selection;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.Window;
 import android.widget.EditText;
 
@@ -94,7 +95,7 @@ public class MainActivity extends Activity implements
 	
 	int foc;
 	private static Handler handler=new Handler();
-	//private RelativeLayout confirm;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -120,27 +121,42 @@ public class MainActivity extends Activity implements
 	public void confirm(View view) {
 		
 		wifiMacString = wifimac.getText().toString().trim();
-		btAddrString = btaddr.getText().toString();
+		btAddrString = btaddr.getText().toString().trim();
 		sn = barcode.getText().toString();
+        if(wifimac.length()>0){
+		    wifiMacString = formatString(wifiMacString).trim();
+		    if(wifiMacString.length()==0){
+				wifimac.setText("");
+				wifimac.setHint("missmatch!");
+				wifimac.setHintTextColor(Color.RED);
+			}
+        }
+        else{
+        	wifimac.setHint("please input!");
+        	wifimac.setHintTextColor(Color.RED);
+        	Animation shake = AnimationUtils.loadAnimation(this,R.anim.shake);
+			wifimac.startAnimation(shake);
+        }
+		if(btaddr.length()>0){
+		    btAddrString = formatString(btAddrString).trim();
+		    if(btAddrString.length()==0){
+				btaddr.setText("");
+				btaddr.setHint("missmatch!");
+				btaddr.setHintTextColor(Color.RED);
+			}
+		}
+		else{
+        	btaddr.setHint("please input!");
+        	btaddr.setHintTextColor(Color.RED);
+        	Animation shake = AnimationUtils.loadAnimation(this,R.anim.shake);
+        	btaddr.startAnimation(shake);
+        }
 		
-		//Toast.makeText(this, wifiMacString, Toast.LENGTH_SHORT).show();
-		wifiMacString = formatString(wifiMacString).trim();
-		int i =wifiMacString.length();
-		System.out.println(i);
-		//Toast.makeText(this, wifiMacString, Toast.LENGTH_SHORT).show();
-		btAddrString = formatString(btAddrString);
-		if(wifiMacString.length()==0){
-			wifimac.setText("");
-			wifimac.setHint("please input again!");
-			wifimac.setHintTextColor(Color.RED);
-		}
-		if(btAddrString.length()==0){
-			btaddr.setText("");
-			btaddr.setHint("please input again!");
-			btaddr.setHintTextColor(Color.RED);
-		}
 		if(sn.length()==0){
-			barcode.setHint("please input");
+			barcode.setHint("please input!");
+			barcode.setHintTextColor(Color.RED);
+			Animation shake = AnimationUtils.loadAnimation(this,R.anim.shake);
+        	barcode.startAnimation(shake);
 		}
 		if(wifiMacString.length()==17||btAddrString.length()==17||sn.length()>0){
 			write(sn, wifiMacString, btAddrString);
@@ -179,8 +195,16 @@ public class MainActivity extends Activity implements
 		}
            
 	}
+	public Boolean ismatch(String s) {
+		Boolean mat = true;
+		String regex = "^[a-f0-9A-F]+$";
+		if(!s.matches(regex))
+			mat = false;
+		return mat;
+	}
 	public String formatString(String string) {
 		String restr ="";
+		if(ismatch(string))
 		if(string.length()==12){
 			String[]str = new String[6];
 			str[0] = string.substring(0, 2);
@@ -240,23 +264,25 @@ public class MainActivity extends Activity implements
 			public void afterTextChanged(Editable arg0) {
 				// TODO Auto-generated method stub
 				//int num = number-arg0.length();
-				selectionStart = editText.getSelectionStart();
-				selectionEnd = editText.getSelectionEnd();
-				if(temp.length()>number){
-					arg0.delete(selectionStart-1, selectionEnd);
-					int tempselection = selectionStart;
-					editText.setText(arg0);
-					editText.setSelection(tempselection);
+				if(editText!=barcode){
+					selectionStart = editText.getSelectionStart();
+					selectionEnd = editText.getSelectionEnd();
+					if(temp.length()>number){
+						arg0.delete(selectionStart-1, selectionEnd);
+						int tempselection = selectionStart;
+						editText.setText(arg0);
+						editText.setSelection(tempselection);
+					}
 				}
+				
 				if(temp.length()==0){
-					editText.setHint("please input");
+					editText.setHint("please input!");
 					editText.setHintTextColor(Color.GRAY);
 				}
 				
 			}
-		};
-		if(editText!=barcode)
-		    editText.addTextChangedListener(textWatcher);
+		};		
+		editText.addTextChangedListener(textWatcher);
 	}
 	protected void dialog() {
 		  AlertDialog.Builder builder = new Builder(MainActivity.this);
