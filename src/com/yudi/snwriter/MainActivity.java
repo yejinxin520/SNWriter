@@ -516,13 +516,19 @@ public class MainActivity extends Activity implements
 	
 	public void doDecode(View v) {
 		//doSetParam(905, 1);
+		if(foc==1)
+		    wifimac.requestFocus();
+		if(foc==2)
+			btaddr.requestFocus();
+		if(foc==3)
+			barcode.requestFocus();
 		if (setIdle() != STATE_IDLE)
 			return;
 		state = STATE_DECODE;
 		decCount = 0;
 		decodeDataString = new String("");
 		decodeStatString = new String("");
-		wifimac.setText("");
+		dspData("");
 		dspStat(R.string.decoding);
 		bcr.startDecode(); // start decode (callback gets results)
 	}
@@ -653,7 +659,10 @@ public class MainActivity extends Activity implements
 				decodeStatString = new String("");
 			}
 			}
-			
+			if(foc<4)
+			    foc++;
+			if(foc==4)
+				foc=1;
 			if (tg != null)
 				tg.startTone(ToneGenerator.TONE_CDMA_NETWORK_CALLWAITING);
 		}
