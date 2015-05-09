@@ -95,7 +95,7 @@ public class MainActivity extends Activity implements
 	
 	int foc;
 	private static Handler handler=new Handler();
-
+	Animation shake;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -114,7 +114,7 @@ public class MainActivity extends Activity implements
 		init(btaddr);
 		init(barcode);
 		//this.write(sn, wifiMacString, btAddrString);
-		
+		shake = AnimationUtils.loadAnimation(this,R.anim.shake);
 		tg = new ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME);
 	}
 	
@@ -129,12 +129,12 @@ public class MainActivity extends Activity implements
 				wifimac.setText("");
 				wifimac.setHint("missmatch!");
 				wifimac.setHintTextColor(Color.RED);
+				wifimac.startAnimation(shake);
 			}
         }
         else{
         	wifimac.setHint("please input!");
         	wifimac.setHintTextColor(Color.RED);
-        	Animation shake = AnimationUtils.loadAnimation(this,R.anim.shake);
 			wifimac.startAnimation(shake);
         }
 		if(btaddr.length()>0){
@@ -143,19 +143,18 @@ public class MainActivity extends Activity implements
 				btaddr.setText("");
 				btaddr.setHint("missmatch!");
 				btaddr.setHintTextColor(Color.RED);
+				btaddr.startAnimation(shake);
 			}
 		}
 		else{
         	btaddr.setHint("please input!");
         	btaddr.setHintTextColor(Color.RED);
-        	Animation shake = AnimationUtils.loadAnimation(this,R.anim.shake);
         	btaddr.startAnimation(shake);
         }
 		
 		if(sn.length()==0){
 			barcode.setHint("please input!");
 			barcode.setHintTextColor(Color.RED);
-			Animation shake = AnimationUtils.loadAnimation(this,R.anim.shake);
         	barcode.startAnimation(shake);
 		}
 		if(wifiMacString.length()==17||btAddrString.length()==17||sn.length()>0){
@@ -196,10 +195,18 @@ public class MainActivity extends Activity implements
            
 	}
 	public Boolean ismatch(String s) {
-		Boolean mat = true;
+		Boolean mat = false;
 		String regex = "^[a-f0-9A-F]+$";
-		if(!s.matches(regex))
-			mat = false;
+		String mut ="02468aceACE";
+		if(s.matches(regex)){
+			if(mut.indexOf(s.substring(1, 2))!=-1){
+				if(s.equals("000000000000")||s.equals("111111111111"))
+					mat = false;
+				else
+					mat = true;
+			}
+		}
+		
 		return mat;
 	}
 	public String formatString(String string) {
@@ -278,6 +285,12 @@ public class MainActivity extends Activity implements
 				if(temp.length()==0){
 					editText.setHint("please input!");
 					editText.setHintTextColor(Color.GRAY);
+					if(editText==wifimac)
+						foc=1;
+					if(editText==btaddr)
+						foc=2;
+					if(editText==barcode)
+						foc=3;
 				}
 				
 			}
@@ -305,17 +318,17 @@ public class MainActivity extends Activity implements
 
 	public void write(String barcode, String wifiMac, String btAddr) {
 		//int flag = -1;
-		if (wifiMac != null){
+		if (wifiMac != null&&wifiMac.length()>0){
 			updateWifiMacAddr(wifiMac);
 		}
 
-		if (btAddr != null)
+		if (btAddr != null&&btAddr.length()>0)
 			updateBtAddr(btAddr);
-		/*if(barcode !=null&&barcode.length()>0)
+		if(barcode !=null&&barcode.length()>0)
 			updateBarcode(barcode);
 
-		return flag;*/
-		int flag = -1;
+		/*
+		
 		byte[] sn_b = barcode.getBytes();
 		short[] wifiMac_b = macString2ByteArray(wifiMac);
 		short[] btAddr_b = macString2ByteArray(btAddr);
@@ -379,7 +392,7 @@ public class MainActivity extends Activity implements
 		} catch (Exception e) {
 			Log.d(TAG, e.getMessage() + ":" + e.getCause());
 			e.printStackTrace();
-		}
+		}*/
 		
 	}
 
@@ -396,17 +409,18 @@ public class MainActivity extends Activity implements
 
 			int i, j;
 			// sn
-			for (i = 0, j = 0; i < MAC_BARCODE_DIGITS; i++) {
+			for (i = 0, j = 0; i < 116; i++) {
 				for (; j < (sn_b.length > MAC_BARCODE_DIGITS ? MAC_BARCODE_DIGITS: sn_b.length); j++, i++)
 					buff[i] = sn_b[j];
 
 				buff[i] = 0;
 			}
 
+			dumpHex(buff);
 			flag = agent.writeFile(NvRAMAgentHelper.PRODUCT_INFO_ID, buff);
 
 			if (flag > 0) {
-				Log.d(TAG, "Update successfully.\r\nPlease reboot this device");
+				Log.d(TAG, "Update sn successfully.\r\nPlease reboot this device");
 			} else {
 				Log.d(TAG, "Update failed");
 			}
@@ -437,10 +451,10 @@ public class MainActivity extends Activity implements
 			for (int i = 0; i < MAC_ADDRESS_DIGITS; i++) {
 				buff[i + 4] = (byte) wifiMacAddr[i];
 			}
-
+			dumpHex(buff);
 			flag = agent.writeFile(NvRAMAgentHelper.WIFI_MAC_ADDR_ID, buff);
 			if (flag > 0) {
-				Log.d(TAG, "Update successfully.\r\nPlease reboot this device");
+				Log.d(TAG, "Update wifimac successfully.\r\nPlease reboot this device");
 			} else {
 				Log.d(TAG, "Update failed");
 			}
@@ -470,10 +484,10 @@ public class MainActivity extends Activity implements
 			for (int i = 0; i < MAC_ADDRESS_DIGITS; i++) {
 				buff[i] = (byte) btAddr[i];
 			}
-
+			dumpHex(buff);
 			flag = agent.writeFile(NvRAMAgentHelper.BT_ADDR_ID, buff);
 			if (flag > 0) {
-				Log.d(TAG, "Update successfully.\r\nPlease reboot this device");
+				Log.d(TAG, "Update btaddr successfully.\r\nPlease reboot this device");
 			} else {
 				Log.d(TAG, "Update failed");
 			}

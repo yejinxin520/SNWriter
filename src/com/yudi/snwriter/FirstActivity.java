@@ -41,8 +41,8 @@ public class FirstActivity extends Activity {
 		wifimactv = (TextView)findViewById(R.id.iniwifimac);
 		btaddrtv = (TextView)findViewById(R.id.inibtaddr);
 		snctv = (TextView)findViewById(R.id.inisn);
-		String wifistr = getMac();
-				//getMacFromDevice(getApplicationContext(), 100);
+		String wifistr = 
+				getMacFromDevice(getApplicationContext(), 100);//getMac();
 		String btmacstr = 
 				getBTAddr();
 		 
@@ -57,7 +57,7 @@ public class FirstActivity extends Activity {
 	}
 	private String getBarcode() {
 		String barstr = null;
-		byte[] sn_b = new byte[1024] ;
+		byte[] sn_b = new byte[64] ;
 
 		try {
 			NvRAMAgent agent = NvRAMAgentHelper.getAgent();
@@ -83,7 +83,7 @@ public class FirstActivity extends Activity {
 		
 		return barstr;
 	}
-	String getMac() {
+	public String getMac() {
 		wifiManager = (WifiManager)this.getSystemService(Context.WIFI_SERVICE);
 		if (!wifiManager.isWifiEnabled()) {
 			tryOpenWifi(wifiManager);
