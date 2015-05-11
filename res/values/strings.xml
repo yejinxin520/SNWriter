@@ -16,6 +16,7 @@
     <string name="btaddr">BT Address :</string>
     <string name="sn">Device Number :</string>
     <string name="change">Begin Change</string>
+    <string name="imei">Imei</string>
     
     <!-- Simple strings. -->
     <string name="decode">Decode</string>

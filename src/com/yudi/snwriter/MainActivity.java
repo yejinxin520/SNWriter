@@ -17,6 +17,7 @@ import android.graphics.Color;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
@@ -24,7 +25,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.Window;
 import android.widget.EditText;
-
 import java.util.StringTokenizer;
 
 import com.motorolasolutions.adc.decoder.BarCodeReader;
@@ -70,7 +70,6 @@ public class MainActivity extends Activity implements
 	}
 	private static final int MAC_BARCODE_DIGITS = 64;
 	private static final int MAC_ADDRESS_DIGITS = 6;
-	//private static final int MAX_ADDRESS_VALUE = 0xff;
 
 	String sn;
 			//="PE900S_201504290002";
@@ -83,6 +82,7 @@ public class MainActivity extends Activity implements
 	private EditText wifimac;
 	private EditText btaddr;
 	private EditText barcode;
+	private EditText imei;
 	private ProgressDialog progressDialog;
 
 	private BluetoothAdapter adapter;
@@ -105,21 +105,45 @@ public class MainActivity extends Activity implements
 		adapter = BluetoothAdapter.getDefaultAdapter();
 		//tv = (TextView) this.findViewById(R.id.tv);
 		//tv.setMovementMethod(new ScrollingMovementMethod());
-
+	
 		//tv.setText(str);
 		wifimac = (EditText)this.findViewById(R.id.wifimac);
 		btaddr = (EditText)this.findViewById(R.id.btaddr);
-		barcode = (EditText)this.findViewById(R.id.barcode);		
+		barcode = (EditText)this.findViewById(R.id.barcode);	
+		imei = (EditText)this.findViewById(R.id.imei);
 		init(wifimac);
 		init(btaddr);
 		init(barcode);
+		init(imei);
 		//this.write(sn, wifiMacString, btAddrString);
 		shake = AnimationUtils.loadAnimation(this,R.anim.shake);
 		tg = new ToneGenerator(AudioManager.STREAM_MUSIC, ToneGenerator.MAX_VOLUME);
 	}
-	
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		System.out.println(event.getKeyCode());
+	     if(((keyCode == 135)||(keyCode == 136)||(keyCode == 137)) && event.getAction() == KeyEvent.ACTION_DOWN){   
+	    	 if(foc==1)
+	 		    wifimac.requestFocus();
+	 		if(foc==2)
+	 			btaddr.requestFocus();
+	 		if(foc==3)
+	 			barcode.requestFocus();	 
+	 		if(foc==4)
+	 			imei.requestFocus();
+	 		
+	 		state = STATE_DECODE;
+	 		decCount = 0;
+	 		decodeDataString = new String("");
+	 		decodeStatString = new String("");
+	 		dspData("");
+	 		dspStat(R.string.decoding);
+	 		bcr.startDecode();
+	         return true;   
+	     }
+	     return super.onKeyDown(keyCode, event);
+	 }
 	public void confirm(View view) {
-		
+		int isok = 1;
 		wifiMacString = wifimac.getText().toString().trim();
 		btAddrString = btaddr.getText().toString().trim();
 		sn = barcode.getText().toString();
@@ -128,6 +152,7 @@ public class MainActivity extends Activity implements
 		    if(wifiMacString.length()==0){
 				wifimac.setText("");
 				wifimac.setHint("missmatch!");
+				isok = 0;
 				wifimac.setHintTextColor(Color.RED);
 				wifimac.startAnimation(shake);
 			}
@@ -142,6 +167,7 @@ public class MainActivity extends Activity implements
 		    if(btAddrString.length()==0){
 				btaddr.setText("");
 				btaddr.setHint("missmatch!");
+				isok = 0;
 				btaddr.setHintTextColor(Color.RED);
 				btaddr.startAnimation(shake);
 			}
@@ -157,54 +183,60 @@ public class MainActivity extends Activity implements
 			barcode.setHintTextColor(Color.RED);
         	barcode.startAnimation(shake);
 		}
-		if(wifiMacString.length()==17||btAddrString.length()==17||sn.length()>0){
-			write(sn, wifiMacString, btAddrString);
-			
-				progressDialog = ProgressDialog.show(MainActivity.this, "", "loading...",true);
-				Thread t = new Thread(new Runnable(){  
-		            public void run(){              	
-								try {
-									if(wifiManager.isWifiEnabled()){
-										wifiManager.setWifiEnabled(false);
-									}
-									if(adapter.isEnabled()){
-										adapter.disable();
-									}
-									Thread.sleep(1000);
-									progressDialog.dismiss();
-									
-								} catch (InterruptedException e) {
-									e.printStackTrace();
+		if (isok == 1)
+			if (wifiMacString.length() == 17 || btAddrString.length() == 17
+					|| sn.length() > 0) {
+				write(sn, wifiMacString, btAddrString);
+
+				progressDialog = ProgressDialog.show(MainActivity.this, "",
+						"loading...", true);
+				Thread t = new Thread(new Runnable() {
+					public void run() {
+						try {
+							if (wifiManager.isWifiEnabled()) {
+								wifiManager.setWifiEnabled(false);
+							}
+							if (adapter.isEnabled()) {
+								adapter.disable();
+							}
+							Thread.sleep(1000);
+							progressDialog.dismiss();
+
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						handler.post(new Runnable() {
+							@Override
+							public void run() {
+								dialog();
+								if (!wifiManager.isWifiEnabled()) {
+									wifiManager.setWifiEnabled(true);
 								}
-								handler.post(new Runnable() {                    
-		                            @Override
-		                            public void run() {
-		                            	dialog(); 
-		                            	if(!wifiManager.isWifiEnabled()){
-		                    				wifiManager.setWifiEnabled(true);
-		                    			}
-		                            	if(!adapter.isEnabled()){
-		                            		adapter.enable();
-		                            	}
-		                            }
-		                        });    
-		            }               
-				});  
-		        t.start();
-		}
-           
+								if (!adapter.isEnabled()) {
+									adapter.enable();
+								}
+							}
+						});
+					}
+				});
+				t.start();
+			}
+
 	}
 	public Boolean ismatch(String s) {
 		Boolean mat = false;
 		String regex = "^[a-f0-9A-F]+$";
 		String mut ="02468aceACE";
 		if(s.matches(regex)){
+			if(foc==1)
 			if(mut.indexOf(s.substring(1, 2))!=-1){
 				if(s.equals("000000000000")||s.equals("111111111111"))
 					mat = false;
 				else
 					mat = true;
 			}
+			
+				mat = true;
 		}
 		
 		return mat;
@@ -244,6 +276,9 @@ public class MainActivity extends Activity implements
 					}
 					if(editText==barcode){
 						foc=3;
+					}
+					if(editText==imei){
+						foc=4;
 					}
 				}
 				else
@@ -291,6 +326,8 @@ public class MainActivity extends Activity implements
 						foc=2;
 					if(editText==barcode)
 						foc=3;
+					if(editText==imei)
+						foc=4;
 				}
 				
 			}
@@ -562,6 +599,8 @@ public class MainActivity extends Activity implements
 			btaddr.requestFocus();
 		if(foc==3)
 			barcode.requestFocus();
+		if(foc==4)
+ 			imei.requestFocus();
 		if (setIdle() != STATE_IDLE)
 			return;
 		state = STATE_DECODE;
@@ -581,6 +620,8 @@ public class MainActivity extends Activity implements
 			btaddr.setHint(id);
 		if(foc==3)
 			barcode.setHint(id);
+		if(foc==4)
+			imei.setHint(id);
 	}
 
 	private void dspData(String string) {
@@ -592,6 +633,8 @@ public class MainActivity extends Activity implements
 			btaddr.setText(string.trim());
 		if(foc==3)
 			barcode.setText(string.trim());
+		if(foc==4)
+			imei.setText(string.trim());
 	}
 
 	private int setIdle() {
@@ -621,6 +664,8 @@ public class MainActivity extends Activity implements
 			btaddr.setHint(string);
 		if(foc==3)
 			barcode.setHint(string);
+		if(foc==4)
+			imei.setHint(string);
 	}
 
 	private void dspErr(String s) {
@@ -699,9 +744,9 @@ public class MainActivity extends Activity implements
 				decodeStatString = new String("");
 			}
 			}
-			if(foc<4)
+			if(foc<5)
 			    foc++;
-			if(foc==4)
+			if(foc==5)
 				foc=1;
 			if (tg != null)
 				tg.startTone(ToneGenerator.TONE_CDMA_NETWORK_CALLWAITING);

@@ -58,7 +58,7 @@
                 android:layout_marginLeft="3dp"
                 android:layout_marginTop="3dp"
                 android:background="@drawable/stroke"
-                android:hint="@string/app_name"
+                android:hint="@string/wifimac"
                 android:singleLine="true"                 
                 
                 />
@@ -88,7 +88,7 @@
                 android:layout_marginLeft="3dp"
                 android:layout_marginTop="1dp"
                 android:background="@drawable/stroke"
-                android:hint="@string/app_name"
+                android:hint="@string/btaddr"
                 android:singleLine="true" 
                 
                 />
@@ -118,7 +118,7 @@
                 android:layout_marginLeft="1dp"
                 android:layout_marginTop="3dp"
                 android:background="@drawable/stroke"
-                android:hint="@string/app_name"
+                android:hint="@string/sn"
                 android:singleLine="true" />
         </LinearLayout>
 
@@ -140,14 +140,14 @@
                 android:src="@drawable/imei" />
 
             <EditText
-                android:id="@+id/et4"
+                android:id="@+id/imei"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="1dp"
                 android:layout_marginTop="3dp"
                 android:background="@drawable/stroke"
-                android:hint="@string/app_name"
+                android:hint="@string/imei"
                 android:singleLine="true" />
         </LinearLayout>
 
