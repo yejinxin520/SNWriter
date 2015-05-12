@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -24,6 +25,7 @@ public class FirstActivity extends Activity {
 	private TextView wifimactv;
 	private TextView btaddrtv;
 	private TextView snctv;
+	private TextView imeitv;
 	private WifiManager wifiManager;
 	private static int IDENTIFY_LEN=17;
 	private static BluetoothAdapter adapter;
@@ -38,18 +40,22 @@ public class FirstActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.activity_first);
 		
+		TelephonyManager tm = (TelephonyManager)this.getSystemService(TELEPHONY_SERVICE);
+
 		wifimactv = (TextView)findViewById(R.id.iniwifimac);
 		btaddrtv = (TextView)findViewById(R.id.inibtaddr);
 		snctv = (TextView)findViewById(R.id.inisn);
+		imeitv = (TextView)findViewById(R.id.iniimei);
 		String wifistr = 
 				getMacFromDevice(getApplicationContext(), 100);//getMac();
 		String btmacstr = 
-				getBTAddr();
-		 
+				getBTAddr();		 
 		String serialName=getBarcode();
+		String imei = tm.getDeviceId();
 		btaddrtv.setText(btmacstr);
 		wifimactv.setText(wifistr);
 		snctv.setText(serialName);
+		imeitv.setText(imei);
 	}
 	public void change(View view) {
 		Intent intent = new Intent(this,MainActivity.class);

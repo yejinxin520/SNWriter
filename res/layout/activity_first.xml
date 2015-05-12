@@ -11,7 +11,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="50dip"
-        android:background="#369" >
+        >
 
         <TextView
             android:layout_width="wrap_content"
@@ -45,7 +45,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginTop="10dp"
+        
         android:layout_marginLeft="20dp"
         android:text="@string/wifimac"
         android:textColor="#fff"
@@ -55,7 +55,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginTop="10dp"
+        
         android:layout_marginLeft="20dp"
         android:text="@string/btaddr"
         android:textColor="#fff"
@@ -66,7 +66,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginTop="10dp"
+        
         android:layout_marginLeft="20dp"
         android:text="@string/btaddr"
         android:textColor="#fff"
@@ -76,7 +76,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginTop="10dp"
+        
         android:layout_marginLeft="20dp"
         android:text="@string/sn"
         android:textColor="#fff"
@@ -87,10 +87,31 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"
+                
         android:layout_marginLeft="20dp"
         android:text="@string/sn"
+        android:textColor="#fff"
+        android:textSize="23sp"
+        />
+    <TextView 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        
+        android:layout_marginLeft="20dp"
+        android:text="@string/imei"
+        android:textColor="#fff"
+        android:textSize="20sp"
+        />
+    <TextView 
+        android:id="@+id/iniimei"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="20dp"
+        android:text="@string/imei"
         android:textColor="#fff"
         android:textSize="23sp"
         />

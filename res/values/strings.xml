@@ -16,10 +16,10 @@
     <string name="btaddr">BT Address :</string>
     <string name="sn">Device Number :</string>
     <string name="change">Begin Change</string>
-    <string name="imei">Imei</string>
+    <string name="imei">Imei :</string>
     
     <!-- Simple strings. -->
-    <string name="decode">Decode</string>
+    <string name="decode">Scan</string>
     <string name="snap">Snapshot</string>
     <string name="beep">beep</string>
     <string name="getparam">Get</string>
