@@ -164,37 +164,43 @@ public class MainActivity extends Activity implements
 		btAddrString = btaddr.getText().toString().trim();
 		sn = barcode.getText().toString();
 		if (sn.length() == 0) {
-			barcode.setHint("please input!");
+			barcode.setHint(R.string.input);
 			barcode.setHintTextColor(Color.RED);
 			barcode.startAnimation(shake);
 			barcode.requestFocus();
 		}
 		if (btaddr.length() > 0) {
-			btAddrString = formatString(btAddrString).trim();
+			if(ismatch(btAddrString,btaddr))
+			    btAddrString = formatString(btAddrString).trim();
+			else
+				btAddrString ="";
 			if (btAddrString.length() == 0) {
 				btaddr.setText("");
-				btaddr.setHint("missmatch!");
+				btaddr.setHint(R.string.missmatch);
 				isok = 0;
 				btaddr.setHintTextColor(Color.RED);
 				btaddr.startAnimation(shake);
 			}
 		} else {
-			btaddr.setHint("please input!");
+			btaddr.setHint(R.string.input);
 			btaddr.setHintTextColor(Color.RED);
 			btaddr.startAnimation(shake);
 			btaddr.requestFocus();
 		}
 		if (wifimac.length() > 0) {
-			wifiMacString = formatString(wifiMacString).trim();
+			if(ismatch(wifiMacString,wifimac))
+			    wifiMacString = formatString(wifiMacString).trim();
+			else
+				wifiMacString = "";
 			if (wifiMacString.length() == 0) {
 				wifimac.setText("");
-				wifimac.setHint("missmatch!");
+				wifimac.setHint(R.string.missmatch);
 				isok = 0;
 				wifimac.setHintTextColor(Color.RED);
 				wifimac.startAnimation(shake);
 			}
 		} else {
-			wifimac.setHint("please input!");
+			wifimac.setHint(R.string.input);
 			wifimac.setHintTextColor(Color.RED);
 			wifimac.startAnimation(shake);
 			wifimac.requestFocus();
@@ -241,19 +247,18 @@ public class MainActivity extends Activity implements
 
 	}
 
-	public Boolean ismatch(String s) {
+	public Boolean ismatch(String s,EditText editText) {
 		Boolean mat = false;
 		String regex = "^[a-f0-9A-F]+$";
 		String mut = "02468aceACE";
 		if (s.matches(regex)) {
-			if (foc == 1)
+			if(editText==wifimac)
 				if (mut.indexOf(s.substring(1, 2)) != -1) {
 					if (s.equals("000000000000") || s.equals("111111111111"))
 						mat = false;
 					else
 						mat = true;
 				}
-
 			mat = true;
 		}
 
@@ -261,23 +266,22 @@ public class MainActivity extends Activity implements
 	}
 
 	public String formatString(String string) {
-		String restr = "";
-		if (ismatch(string))
-			if (string.length() == 12) {
-				String[] str = new String[6];
-				str[0] = string.substring(0, 2);
-				str[1] = string.substring(2, 4);
-				str[2] = string.substring(4, 6);
-				str[3] = string.substring(6, 8);
-				str[4] = string.substring(8, 10);
-				str[5] = string.substring(10, 12);
+		String restr = "";		
+		if (string.length() == 12) {
+			String[] str = new String[6];
+			str[0] = string.substring(0, 2);
+			str[1] = string.substring(2, 4);
+			str[2] = string.substring(4, 6);
+			str[3] = string.substring(6, 8);
+			str[4] = string.substring(8, 10);
+			str[5] = string.substring(10, 12);
 
-				for (int i = 0; i < 5; i++) {
-					restr += str[i] + ":";
-				}
-				restr += str[5];
-				return restr;
+			for (int i = 0; i < 5; i++) {
+				restr += str[i] + ":";
 			}
+			restr += str[5];
+			return restr;
+		}
 		return restr;
 	}
 
@@ -328,7 +332,7 @@ public class MainActivity extends Activity implements
 			public void afterTextChanged(Editable arg0) {
 				// TODO Auto-generated method stub
 				// int num = number-arg0.length();
-				if (editText != barcode) {
+				if (editText == wifimac||editText == btaddr) {
 					selectionStart = editText.getSelectionStart();
 					selectionEnd = editText.getSelectionEnd();
 					if (temp.length() > number) {
@@ -341,7 +345,7 @@ public class MainActivity extends Activity implements
 
 				if (temp.length() == 0) {
 					editText.requestFocus();
-					editText.setHint("please input!");
+					editText.setHint(R.string.input);
 					editText.setHintTextColor(Color.GRAY);
 					if (editText == imei) {
 						hideBtn(ib3);
@@ -379,7 +383,7 @@ public class MainActivity extends Activity implements
 		editText.addTextChangedListener(textWatcher);
 	}
 
-	public void doLear(View v) {
+	public void doClear(View v) {
 		hideBtn(v);
 		if (v.equals(ib))
 			wifimac.setText("");
@@ -407,16 +411,16 @@ public class MainActivity extends Activity implements
 
 	protected void dialog() {
 		AlertDialog.Builder builder = new Builder(MainActivity.this);
-		builder.setMessage("Update successfully,go back to check£¿");
-		builder.setTitle("prompt message");
-		builder.setPositiveButton("YES", new OnClickListener() {
+		builder.setMessage(R.string.message);
+		builder.setTitle(R.string.message_title);
+		builder.setPositiveButton(R.string.yes, new OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 
 				MainActivity.this.finish();
 			}
 		});
-		builder.setNegativeButton("NO", new OnClickListener() {
+		builder.setNegativeButton(R.string.no, new OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
 				dialog.dismiss();
 			}
@@ -675,15 +679,30 @@ public class MainActivity extends Activity implements
 
 	private void dspData(String string) {
 		// TODO Auto-generated method stub
-		if (foc == 1) {
-			wifimac.setText(string.trim());
-		}
-		if (foc == 2)
-			btaddr.setText(string.trim());
-		if (foc == 3)
-			barcode.setText(string.trim());
-		if (foc == 4)
-			imei.setText(string.trim());
+		if (foc == 1 || foc == 2)
+			if (string.trim().length() > 0 && string.trim().length() != number) {
+				string = "";
+				AlertDialog.Builder builder = new Builder(MainActivity.this);
+				builder.setMessage(R.string.message1);
+				builder.setTitle(R.string.message_title1);
+				builder.setPositiveButton(R.string.yes, new OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				});
+				builder.create().show();
+			}
+		
+			if (foc == 1) {
+				wifimac.setText(string.trim());
+			}
+			if (foc == 2)
+				btaddr.setText(string.trim());
+			if (foc == 3)
+				barcode.setText(string.trim());
+			if (foc == 4)
+				imei.setText(string.trim());
+				
 	}
 
 	private int setIdle() {
@@ -786,8 +805,9 @@ public class MainActivity extends Activity implements
 					decodeStatString = new String("");
 				}
 			}
-			if (foc < 5)
+			if (foc < 3&&length==12||foc>=3&&foc<5)
 				foc++;
+			System.out.println(length);
 			if (foc == 5)
 				foc = 1;
 			if (foc == 1)
@@ -805,16 +825,16 @@ public class MainActivity extends Activity implements
 			dspData("");
 			switch (length) {
 			case BarCodeReader.DECODE_STATUS_TIMEOUT:
-				dspStat("decode timed out");
+				dspStat(R.string.timedout);
 				break;
 
 			case BarCodeReader.DECODE_STATUS_CANCELED:
-				dspStat("decode cancelled");
+				dspStat(R.string.cancel);
 				break;
 
 			case BarCodeReader.DECODE_STATUS_ERROR:
 			default:
-				dspStat("decode failed");
+				dspStat(R.string.failed);
 				break;
 			}
 		}

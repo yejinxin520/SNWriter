@@ -17,6 +17,17 @@
     <string name="sn">Device Number :</string>
     <string name="change">Begin Change</string>
     <string name="imei">Imei :</string>
+    <string name="input">please input!</string>
+    <string name="missmatch">missmatch!</string>
+    <string name="message_title">prompt message</string>
+    <string name="message">Update successfully,go back to check？</string>
+    <string name="message_title1">Warning</string>
+    <string name="message1">The length of the barcode must be 12,please scan the other one!</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="timedout">decode timed out</string>
+    <string name="cancel">decode cancelled</string>
+    <string name="failed">decode failed</string>
     
     <!-- Simple strings. -->
     <string name="decode">Scan</string>

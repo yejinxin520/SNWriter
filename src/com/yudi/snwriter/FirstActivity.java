@@ -32,12 +32,12 @@ public class FirstActivity extends Activity {
 	public static final String TAG = "SNWriter";
 	private static final int MAC_BARCODE_DIGITS = 64;
 	private long exitTime = 0;
- 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		
 		setContentView(R.layout.activity_first);
 		
 		TelephonyManager tm = (TelephonyManager)this.getSystemService(TELEPHONY_SERVICE);
@@ -133,22 +133,17 @@ public class FirstActivity extends Activity {
 		adapter = BluetoothAdapter.getDefaultAdapter();
 		String btmac = "";
 		if(adapter!=null){
-			if(!adapter.isEnabled()){
+			if(!adapter.isEnabled()){				
 				//Intent enBT = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);  
-                //startActivityForResult(enBT, REQUEST_ENABLE_BT);
-				adapter.enable();
+                //startActivityForResult(enBT, REQUEST_ENABLE_BT);				
 				Thread t = new Thread(new Runnable(){  
-		            public void run(){  
-		            	for (int index = 0; index < 100; index++) {
-							
-							if (index != 0) {
-								try {
-									Thread.sleep(100);
+		            public void run(){  		            	
+								try {adapter.enable();
+									Thread.sleep(100);									
 								} catch (InterruptedException e) {
 									e.printStackTrace();
 								}
-							}
-						}
+						
 		            }});  
 		        t.start();				
 				btmac = adapter.getAddress();				
@@ -181,7 +176,8 @@ public class FirstActivity extends Activity {
 		if(info==null||isNull(info.getMacAddress())){
 			return null;
 		}
-		String mac = info.getMacAddress().replaceAll(":", "").trim().toUpperCase();
+		String mac = info.getMacAddress();
+				//.replaceAll(":", "").trim().toUpperCase();
 		mac = formatIdentify(mac);
 		return mac;
 	}
@@ -284,8 +280,8 @@ public class FirstActivity extends Activity {
 @Override
 protected void onResume(){
     super.onResume();
-    String wifistr = getMac();
-    		//getMacFromDevice(getApplicationContext(), 100);
+    String wifistr = 
+    		getMacFromDevice(getApplicationContext(), 100);//getMac();
 	String btmacstr =  
 			getBTAddr();
 	 
