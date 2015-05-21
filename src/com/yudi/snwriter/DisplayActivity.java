@@ -20,7 +20,7 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class FirstActivity extends Activity {
+public class DisplayActivity extends Activity {
 
 	private TextView wifimactv;
 	private TextView btaddrtv;

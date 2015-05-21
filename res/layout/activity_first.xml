@@ -5,8 +5,7 @@
     android:layout_height="match_parent"
     android:background="#369"
     android:orientation="vertical"
-    tools:context="com.example.input.MainActivity"
-    tools:ignore="MergeRootFrame" >
+     >
 
     <RelativeLayout
         android:layout_width="match_parent"
